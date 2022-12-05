@@ -15,4 +15,4 @@ app.listen(3000, () => {
 });
 
 // Exports the Express App to be used as a serverless application
-module.exports = app;
+//module.exports = app;
