@@ -6,6 +6,7 @@ function validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro) {
     if (!!margemLucro && !isNaN(margemLucro)) {
         margemLucro = parseFloat(margemLucro) / 100.00;
         precoVenda = parseFloat(precoCusto) * (margemLucro + 1)
+        margemLucro = margemLucro * 100.00;
     } else if (!!precoVenda && !isNaN(precoVenda)) {
         console.log("cheguei")
         precoVenda = parseFloat(precoVenda);
@@ -14,7 +15,7 @@ function validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro) {
     }
 
     return {
-        precoVenda: precoVenda,
+        precoVenda: precoVenda.toFixed(2),
         margemLucro: margemLucro.toFixed(2)
     }
 }
@@ -70,8 +71,8 @@ router.post("/produto", async (req, res) => {
     try {
         const { nome, descricao, precoCusto, estoque } = req.body;
 
-        let precoVenda = req.body.precoVenda;
-        let margemLucro = req.body.margemLucro;
+        let precoVenda = Number(req.body.precoVenda).toFixed(2);
+        let margemLucro = Number(req.body.margemLucro).toFixed(2);
 
         let validacaoVenda = validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro)
 
