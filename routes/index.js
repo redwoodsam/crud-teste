@@ -26,6 +26,7 @@ router.get("/produto", async (req, res) => {
         let produtosModificados = produtos.map(produto => {
             return {
                 id: produto.id,
+                nome: produto.nome,
                 descricao: produto.descricao,
                 precoVenda: produto.preco_venda,
                 precoCusto: produto.preco_custo,
@@ -50,6 +51,7 @@ router.get("/produto/:search", async (req, res) => {
         let produtosModificados = produtos.map(produto => {
             return {
                 id: produto.id,
+                nome: produto.nome,
                 descricao: produto.descricao,
                 precoVenda: produto.preco_venda,
                 precoCusto: produto.preco_custo,
