@@ -22,7 +22,20 @@ function validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro) {
 router.get("/produto", async (req, res) => {
     try {
         const produtos = await Produto.findAll();
-        res.json(produtos);
+
+        let produtosModificados = produtos.map(produto => {
+            return {
+                id: produto.id,
+                descricao: produto.descricao,
+                precoVenda: produto.preco_venda,
+                precoCusto: produto.preco_custo,
+                margemLucro: produto.margem_lucro,
+                estoque: produto.estoque,
+                dataHoraCadastro: produto.data_hora_cadastro
+            }
+        });
+
+        res.json(produtosModificados);
     } catch (error) {
         res.send(error);
     }
@@ -34,7 +47,18 @@ router.get("/produto/:search", async (req, res) => {
         const produtos = await Produto.findAll({
             where: sequelize.where(sequelize.fn('LOWER', sequelize.col('nome')), 'LIKE', '%' + String(search).toLowerCase() + '%')
         });
-        res.json(produtos);
+        let produtosModificados = produtos.map(produto => {
+            return {
+                id: produto.id,
+                descricao: produto.descricao,
+                precoVenda: produto.preco_venda,
+                precoCusto: produto.preco_custo,
+                margemLucro: produto.margem_lucro,
+                estoque: produto.estoque,
+                dataHoraCadastro: produto.data_hora_cadastro
+            }
+        });
+        res.json(produtosModificados);
     } catch (error) {
         res.send(error);
     }
