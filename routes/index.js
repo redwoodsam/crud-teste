@@ -1,69 +1,124 @@
 const router = require("express").Router();
-const { Pessoa } = require("../models");
-const Sequelize = require("sequelize");
+const { Produto } = require("../models");
+const sequelize = require("sequelize");
 
-router.get("/pessoas", async (req, res) => {
+function validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro) {
+    if (!!margemLucro && !isNaN(margemLucro)) {
+        margemLucro = parseFloat(margemLucro) / 100.00;
+        precoVenda = parseFloat(precoCusto) * (margemLucro + 1)
+    } else if (!!precoVenda && !isNaN(precoVenda)) {
+        console.log("cheguei")
+        precoVenda = parseFloat(precoVenda);
+        precoCusto = parseFloat(precoCusto);
+        margemLucro = ((precoVenda - precoCusto) / precoCusto) * 100;
+    }
+
+    return {
+        precoVenda: precoVenda,
+        margemLucro: margemLucro.toFixed(2)
+    }
+}
+
+router.get("/produto", async (req, res) => {
     try {
-        const pessoas = await Pessoa.findAll();
-        res.json(pessoas);
-    } catch(error) {
+        const produtos = await Produto.findAll();
+        res.json(produtos);
+    } catch (error) {
         res.send(error);
     }
 });
 
-router.get("/pessoas/:id", async (req, res) => {
+router.get("/produto/:search", async (req, res) => {
     try {
-        const id  = req.params.id;
-        const pessoa = await Pessoa.findOne({
-            where: {
-                id: id
-            }
+        const search = req.params.search;
+        const produtos = await Produto.findAll({
+            where: sequelize.where(sequelize.fn('LOWER', sequelize.col('nome')), 'LIKE', '%' + String(search).toLowerCase() + '%')
         });
-        res.json(pessoa);
-    } catch(error) {
+        res.json(produtos);
+    } catch (error) {
         res.send(error);
     }
 });
 
-router.post("/pessoas", async (req, res) => {
+router.post("/produto", async (req, res) => {
     try {
-        const { nome, idade } = req.body;
-        let pessoa = await Pessoa.create({
+        const { nome, descricao, precoCusto, estoque } = req.body;
+
+        let precoVenda = req.body.precoVenda;
+        let margemLucro = req.body.margemLucro;
+
+        let validacaoVenda = validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro)
+
+        let produto = await Produto.create({
             nome: nome,
-            idade: idade
+            descricao: descricao,
+            preco_custo: precoCusto,
+            preco_venda: validacaoVenda.precoVenda,
+            estoque: estoque,
+            data_hora_cadastro: new Date(),
+            margem_lucro: validacaoVenda.margemLucro
         });
-        res.json(pessoa);
-    } catch(error) {
+
+        res.json(produto);
+
+    } catch (error) {
         res.send(error);
     }
 });
 
-router.put("/pessoas/:id", async (req, res) => {
+router.put("/produto/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        const { nome, idade } = req.body;
-        let pessoa = await Pessoa.update({nome: nome, idade: idade}, {
+        const { nome, descricao, estoque } = req.body;
+
+        let produtoSalvo = await Produto.findOne({
             where: {
                 id: id
             }
-        });
-        res.json(pessoa);
-    } catch(error) {
+        })
+
+        let precoCusto = !!req.body.precoCusto ? req.body.precoCusto : produtoSalvo.dataValues.preco_custo;
+        let precoVenda = !!req.body.precoVenda ? req.body.precoVenda : produtoSalvo.dataValues.preco_venda;
+        let margemLucro = !!req.body.margemLucro ? req.body.margemLucro : produtoSalvo.dataValues.margem_lucro;
+
+        let validacaoVenda = validaPrecoVendaMargemLucro(
+            precoCusto,
+            precoVenda,
+            margemLucro
+        )
+
+        let produto = await Produto.update(
+            {
+                nome: nome,
+                descricao: descricao,
+                preco_custo: precoCusto,
+                preco_venda: validacaoVenda.precoVenda,
+                estoque: estoque,
+                margem_lucro: validacaoVenda.margemLucro
+            },
+            {
+                where: {
+                    id: id
+                }
+            });
+
+        res.json(produto);
+    } catch (error) {
         res.send(error);
     }
 });
 
-router.delete("/pessoas/:id", async (req, res) => {
+router.delete("/produto/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        const pessoa = await Pessoa.destroy({
+        await Produto.destroy({
             where: {
                 id: id
             }
         });
 
-        res.json(`Pessoa apagada com sucesso!`);
-    } catch(error) {
+        res.json(`Produto apagada com sucesso!`);
+    } catch (error) {
         res.send(error);
     }
 });

@@ -10,13 +10,36 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       nome: {
-        type: Sequelize.STRING
-      },
-      preco: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.STRING,
+        allowNull: true
       },
       descricao: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      preco_custo: {
+        type: Sequelize.DECIMAL,
+        allowNull: true
+      },
+      preco_venda: {
+        type: Sequelize.DECIMAL,
+        allowNull: true
+      },
+      margem_lucro: {
+        type: Sequelize.DECIMAL,
+        allowNull: true
+      },
+      descricao: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      estoque: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
+      data_hora_cadastro: {
+        allowNull: false,
+        type: Sequelize.DATE
       },
       createdAt: {
         allowNull: false,
