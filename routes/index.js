@@ -2,22 +2,27 @@ const router = require("express").Router();
 const { Produto } = require("../models");
 const sequelize = require("sequelize");
 
-function validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro) {
+function validaPrecoVendaMargemLucro(precoCusto = 0, precoVenda = 0, margemLucro = 0) {
+    let novoPrecoVenda = 0;
+    let novaMargemLucro = 0;
+
     if (!!margemLucro && !isNaN(margemLucro)) {
-        margemLucro = parseFloat(margemLucro) / 100.00;
-        precoVenda = parseFloat(precoCusto) * (margemLucro + 1)
-        margemLucro = margemLucro * 100.00;
+        margemLucro = (margemLucro / 100) + 1;
+        novoPrecoVenda = precoCusto * margemLucro;
+        novaMargemLucro = (margemLucro - 1) * 100;
+
     } else if (!!precoVenda && !isNaN(precoVenda)) {
-        console.log("cheguei")
         precoVenda = parseFloat(precoVenda);
         precoCusto = parseFloat(precoCusto);
         margemLucro = ((precoVenda - precoCusto) / precoCusto) * 100;
+        console.log("cheguei2")
     }
 
     return {
-        precoVenda: precoVenda.toFixed(2),
-        margemLucro: margemLucro.toFixed(2)
-    }
+        precoVenda: novoPrecoVenda,
+        margemLucro: novaMargemLucro,
+        precoCusto: precoCusto
+    };
 }
 
 router.get("/produto", async (req, res) => {
@@ -71,19 +76,23 @@ router.post("/produto", async (req, res) => {
     try {
         const { nome, descricao, precoCusto, estoque } = req.body;
 
-        let precoVenda = Number(req.body.precoVenda).toFixed(2);
-        let margemLucro = Number(req.body.margemLucro).toFixed(2);
+        let precoVenda = req.body.precoVenda;
+        let margemLucro = req.body.margemLucro;
 
-        let validacaoVenda = validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro)
+        let validacaoVenda = validaPrecoVendaMargemLucro(precoCusto, precoVenda, margemLucro);
+
+        let precoVendaConvertido = Number(validacaoVenda.precoVenda).toFixed(2);
+        let precoCustoConvertido = Number(validacaoVenda.precoCusto).toFixed(2);
+        let margemLucroConvertido = Number(validacaoVenda.margemLucro).toFixed(2);
 
         let produto = await Produto.create({
             nome: nome,
             descricao: descricao,
-            preco_custo: precoCusto,
-            preco_venda: validacaoVenda.precoVenda,
+            preco_custo: precoCustoConvertido,
+            preco_venda: precoVendaConvertido,
             estoque: estoque,
             data_hora_cadastro: new Date(),
-            margem_lucro: validacaoVenda.margemLucro
+            margem_lucro: margemLucroConvertido
         });
 
         res.json(produto);
@@ -114,14 +123,19 @@ router.put("/produto/:id", async (req, res) => {
             margemLucro
         )
 
+
+        let precoVendaConvertido = Number(validacaoVenda.precoVenda).toFixed(2);
+        let precoCustoConvertido = Number(validacaoVenda.precoCusto).toFixed(2);
+        let margemLucroConvertido = Number(validacaoVenda.margemLucro).toFixed(2);
+
         let produto = await Produto.update(
             {
                 nome: nome,
                 descricao: descricao,
-                preco_custo: precoCusto,
-                preco_venda: validacaoVenda.precoVenda,
+                preco_custo: precoCustoConvertido,
+                preco_venda: precoVendaConvertido,
                 estoque: estoque,
-                margem_lucro: validacaoVenda.margemLucro
+                margem_lucro: margemLucroConvertido
             },
             {
                 where: {
