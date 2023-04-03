@@ -11,11 +11,12 @@ function validaPrecoVendaMargemLucro(precoCusto = 0, precoVenda = 0, margemLucro
         novoPrecoVenda = precoCusto * margemLucro;
         novaMargemLucro = (margemLucro - 1) * 100;
 
-    } else if (!!precoVenda && !isNaN(precoVenda)) {
-        precoVenda = parseFloat(precoVenda);
-        precoCusto = parseFloat(precoCusto);
-        margemLucro = ((precoVenda - precoCusto) / precoCusto) * 100;
-        console.log("cheguei2")
+    }
+
+    if (!!precoVenda && !isNaN(precoVenda)) {
+        precoCusto = Number(precoCusto);
+        novoPrecoVenda = Number(precoVenda);
+        novaMargemLucro = (novoPrecoVenda - precoCusto) / precoCusto * 100;
     }
 
     return {
